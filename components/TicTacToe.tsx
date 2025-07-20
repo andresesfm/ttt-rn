@@ -1,31 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Player = "X" | "O" | null;
 
+type Winner = Player | "draw" | null;
+
 const TicTacToe = () => {
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [player, setPlayer] = useState<Player>("X");
-  const [winner, setWinner] = useState<Player>(null);
+  const [winner, setWinner] = useState<Winner>(null);
 
-  const handlePress = (index: number) => {
-    if (board[index] || winner) {
-      return;
-    }
+  const handlePress = useCallback(
+    (index: number) => {
+      if (board[index] || winner) {
+        return;
+      }
 
-    const newBoard = [...board];
-    newBoard[index] = player;
-    setBoard(newBoard);
+      const newBoard = [...board];
+      newBoard[index] = player;
+      setBoard(newBoard);
 
-    const newWinner = calculateWinner(newBoard);
-    if (newWinner) {
-      setWinner(newWinner);
-    } else if (newBoard.every((cell) => cell !== null)) {
-      setWinner("draw" as any); // It's a draw
-    } else {
-      setPlayer(player === "X" ? "O" : "X");
-    }
-  };
+      const newWinner = calculateWinner(newBoard);
+      if (newWinner) {
+        setWinner(newWinner);
+      } else if (newBoard.every((cell) => cell !== null)) {
+        setWinner("draw");
+      } else {
+        setPlayer(player === "X" ? "O" : "X");
+      }
+    },
+    [board, player, winner]
+  );
 
   const calculateWinner = (squares: Player[]) => {
     const lines = [
