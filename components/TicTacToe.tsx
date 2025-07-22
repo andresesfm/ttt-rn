@@ -46,6 +46,75 @@ const findRandomMove = (currentBoard: Player[]) => {
   return null;
 };
 
+/** https://www.neverstopbuilding.com/blog/minimax */
+const minimax = (newBoard: Player[], player: Player): number => {
+  const availSpots = newBoard.map((cell, index) => (cell === null ? index : null)).filter((s) => s !== null);
+
+  if (calculateWinner(newBoard) === "X") {
+    return -10;
+  } else if (calculateWinner(newBoard) === "O") {
+    return 10;
+  } else if (availSpots.length === 0) {
+    return 0;
+  }
+
+  const moves: { index: number; score: number }[] = [];
+  for (let i = 0; i < availSpots.length; i++) {
+    const move: { index: number; score: number } = { index: 0, score: 0 };
+    move.index = availSpots[i]!;
+    newBoard[availSpots[i]!] = player;
+
+    if (player === "O") {
+      const result = minimax(newBoard, "X");
+      move.score = result;
+    } else {
+      const result = minimax(newBoard, "O");
+      move.score = result;
+    }
+
+    newBoard[availSpots[i]!] = null;
+    moves.push(move);
+  }
+
+  let bestMove = 0;
+  if (player === "O") {
+    let bestScore = -10000;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  } else {
+    let bestScore = 10000;
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < bestScore) {
+        bestScore = moves[i].score;
+        bestMove = i;
+      }
+    }
+  }
+  return moves[bestMove].score;
+};
+
+const findBestMove = (currentBoard: Player[]) => {
+  let bestVal = -1000;
+  let bestMove = -1;
+
+  for (let i = 0; i < 9; i++) {
+    if (currentBoard[i] === null) {
+      const tempBoard = [...currentBoard];
+      tempBoard[i] = "O";
+      const moveVal = minimax(tempBoard, "X");
+      if (moveVal > bestVal) {
+        bestMove = i;
+        bestVal = moveVal;
+      }
+    }
+  }
+  return bestMove;
+};
+
 const TicTacToe = () => {
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [player, setPlayer] = useState<Player>("X");
@@ -99,6 +168,8 @@ const TicTacToe = () => {
       let move;
       if (strategy === "winning") {
         move = findWinningMove(board, "O") ?? findWinningMove(board, "X") ?? findRandomMove(board);
+      } else if (strategy === "minimax") {
+        move = findBestMove(board);
       } else {
         move = findRandomMove(board);
       }
@@ -118,6 +189,9 @@ const TicTacToe = () => {
         </TouchableOpacity>
         <TouchableOpacity style={[styles.strategyButton, strategy === "winning" && styles.activeStrategy]} onPress={() => setStrategy("winning")}>
           <Text style={styles.strategyButtonText}>Winning</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.strategyButton, strategy === "minimax" && styles.activeStrategy]} onPress={() => setStrategy("minimax")}>
+          <Text style={styles.strategyButtonText}>Minimax</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.board}>{Array.from({ length: 9 }).map((_, index) => renderCell(index))}</View>
