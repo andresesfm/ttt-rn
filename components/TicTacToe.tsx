@@ -1,6 +1,7 @@
 import { colors, spacing, styles } from "@/styles/styles";
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { CustomAlert } from "./CustomAlert";
 
 type Player = "X" | "O" | null;
 
@@ -160,7 +161,11 @@ const TicTacToe = () => {
 
   useEffect(() => {
     if (winner) {
-      Alert.alert("Game Over", winner === "draw" ? "It's a draw!" : `Player ${winner} wins!`, [{ text: "Play Again", onPress: resetGame }]);
+      CustomAlert({
+        title: "Game Over",
+        message: winner === "draw" ? "It's a draw!" : `Player ${winner} wins!`,
+        onPress: resetGame,
+      });
     }
   }, [winner]);
 
