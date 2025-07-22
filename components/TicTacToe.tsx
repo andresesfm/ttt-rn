@@ -5,10 +5,52 @@ type Player = "X" | "O" | null;
 
 type Winner = Player | "draw" | null;
 
+const calculateWinner = (squares: Player[]) => {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a];
+    }
+  }
+  return null;
+};
+
+const findWinningMove = (currentBoard: Player[], forPlayer: Player) => {
+  for (let i = 0; i < 9; i++) {
+    if (currentBoard[i] === null) {
+      const tempBoard = [...currentBoard];
+      tempBoard[i] = forPlayer;
+      if (calculateWinner(tempBoard) === forPlayer) {
+        return i;
+      }
+    }
+  }
+  return null;
+};
+
+const findRandomMove = (currentBoard: Player[]) => {
+  const emptyCells = currentBoard.map((cell, index) => (cell === null ? index : null)).filter((val) => val !== null);
+  if (emptyCells.length > 0) {
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  }
+  return null;
+};
+
 const TicTacToe = () => {
   const [board, setBoard] = useState<Player[]>(Array(9).fill(null));
   const [player, setPlayer] = useState<Player>("X");
   const [winner, setWinner] = useState<Winner>(null);
+  const [strategy, setStrategy] = useState("random");
 
   const handlePress = useCallback(
     (index: number) => {
@@ -32,26 +74,6 @@ const TicTacToe = () => {
     [board, player, winner]
   );
 
-  const calculateWinner = (squares: Player[]) => {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
-      }
-    }
-    return null;
-  };
-
   const renderCell = (index: number) => {
     return (
       <TouchableOpacity style={styles.cell} onPress={() => handlePress(index)}>
@@ -74,20 +96,30 @@ const TicTacToe = () => {
 
   useEffect(() => {
     if (player === "O" && !winner) {
-      // Play on a random empty cell
-      const emptyCells = board.map((cell, index) => (cell === null ? index : null)).filter((val) => val !== null);
-      if (emptyCells.length > 0) {
-        const randomIndex = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        if (randomIndex !== null) {
-          handlePress(randomIndex);
-        }
+      let move;
+      if (strategy === "winning") {
+        move = findWinningMove(board, "O") ?? findWinningMove(board, "X") ?? findRandomMove(board);
+      } else {
+        move = findRandomMove(board);
+      }
+
+      if (move !== null) {
+        handlePress(move);
       }
     }
-  }, [player, board, winner]);
+  }, [player, board, winner, handlePress, strategy]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tic Tac Toe</Text>
+      <View style={styles.strategyContainer}>
+        <TouchableOpacity style={[styles.strategyButton, strategy === "random" && styles.activeStrategy]} onPress={() => setStrategy("random")}>
+          <Text style={styles.strategyButtonText}>Random</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.strategyButton, strategy === "winning" && styles.activeStrategy]} onPress={() => setStrategy("winning")}>
+          <Text style={styles.strategyButtonText}>Winning</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.board}>{Array.from({ length: 9 }).map((_, index) => renderCell(index))}</View>
       <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
         <Text style={styles.resetButtonText}>Reset Game</Text>
@@ -138,6 +170,25 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: "#FFF",
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  strategyContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  strategyButton: {
+    backgroundColor: "#DDD",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  activeStrategy: {
+    backgroundColor: "#333",
+  },
+  strategyButtonText: {
+    color: "#000",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });
