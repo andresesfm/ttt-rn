@@ -1,3 +1,4 @@
+import { colors, spacing, styles } from "@/styles/styles";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -145,8 +146,8 @@ const TicTacToe = () => {
 
   const renderCell = (index: number) => {
     return (
-      <TouchableOpacity style={styles.cell} onPress={() => handlePress(index)}>
-        <Text style={styles.cellText}>{board[index]}</Text>
+      <TouchableOpacity key={index} style={componentStyles.cell} onPress={() => handlePress(index)}>
+        <Text style={[componentStyles.cellText, board[index] === "X" ? styles.player1 : styles.player2]}>{board[index]}</Text>
       </TouchableOpacity>
     );
   };
@@ -181,46 +182,38 @@ const TicTacToe = () => {
   }, [player, board, winner, handlePress, strategy]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tic Tac Toe</Text>
-      <View style={styles.strategyContainer}>
-        <TouchableOpacity style={[styles.strategyButton, strategy === "random" && styles.activeStrategy]} onPress={() => setStrategy("random")}>
-          <Text style={styles.strategyButtonText}>Random</Text>
+    <View style={[styles.container, styles.itemsCenter, styles.justifyCenter]}>
+      <Text style={[styles.h1, { color: colors.textPrimary }]}>Tic Tac Toe</Text>
+      <View style={[styles.flex, styles.flexRow, styles.mbMd]}>
+        <TouchableOpacity style={[styles.btn, styles.btnSecondary, strategy === "random" && styles.btnPrimary]} onPress={() => setStrategy("random")}>
+          <Text style={[styles.btnText, strategy === "random" && { color: colors.textPrimary }]}>Random</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.strategyButton, strategy === "winning" && styles.activeStrategy]} onPress={() => setStrategy("winning")}>
-          <Text style={styles.strategyButtonText}>Winning</Text>
+        <TouchableOpacity
+          style={[styles.btn, styles.btnSecondary, strategy === "winning" && styles.btnPrimary, { marginHorizontal: spacing.sm }]}
+          onPress={() => setStrategy("winning")}
+        >
+          <Text style={[styles.btnText, strategy === "winning" && { color: colors.textPrimary }]}>Winning</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.strategyButton, strategy === "minimax" && styles.activeStrategy]} onPress={() => setStrategy("minimax")}>
-          <Text style={styles.strategyButtonText}>Minimax</Text>
+        <TouchableOpacity style={[styles.btn, styles.btnSecondary, strategy === "minimax" && styles.btnPrimary]} onPress={() => setStrategy("minimax")}>
+          <Text style={[styles.btnText, strategy === "minimax" && { color: colors.textPrimary }]}>Minimax</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.board}>{Array.from({ length: 9 }).map((_, index) => renderCell(index))}</View>
-      <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
-        <Text style={styles.resetButtonText}>Reset Game</Text>
+      <View style={componentStyles.board}>{Array.from({ length: 9 }).map((_, index) => renderCell(index))}</View>
+      <TouchableOpacity style={[styles.btn, styles.btnPrimary, styles.mtMd]} onPress={resetGame}>
+        <Text style={styles.btnText}>Reset Game</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF",
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
+const componentStyles = StyleSheet.create({
   board: {
     width: 300,
     height: 300,
     flexDirection: "row",
     flexWrap: "wrap",
     borderWidth: 3,
-    borderColor: "#333",
+    borderColor: colors.textPrimary,
   },
   cell: {
     width: "33.333%",
@@ -228,41 +221,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#333",
+    borderColor: colors.textPrimary,
   },
   cellText: {
     fontSize: 48,
-    fontWeight: "bold",
-  },
-  resetButton: {
-    marginTop: 20,
-    backgroundColor: "#333",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  resetButtonText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  strategyContainer: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  strategyButton: {
-    backgroundColor: "#DDD",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginHorizontal: 10,
-  },
-  activeStrategy: {
-    backgroundColor: "#333",
-  },
-  strategyButtonText: {
-    color: "#000",
-    fontSize: 16,
     fontWeight: "bold",
   },
 });
